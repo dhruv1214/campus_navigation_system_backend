@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/dhruv1214/campus_navigation_system_backend#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
