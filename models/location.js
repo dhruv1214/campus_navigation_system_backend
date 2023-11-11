@@ -16,14 +16,19 @@ const locationSchema = new mongoose.Schema({
         trim: true
     },
     floor: Number,
-    roomNumber: String,
-    location: {
-        coordinates: {
-            type: [Number],
-            index: '2dsphere'
-        }
-    }
+    roomNumber: String
 });
+
+locationSchema.virtual('building', {
+    ref: 'Building',
+    localField: 'buildingId',
+    foreignField: '_id',
+    justOne: true
+  });
+  
+  locationSchema.set('toObject', { virtuals: true });
+  locationSchema.set('toJSON', { virtuals: true });
+  
 
 const Location = mongoose.model('Location', locationSchema);
 module.exports = Location;

@@ -3,7 +3,7 @@ const Location = require('../models/location');
 const LocationService = {
     async listLocations() {
         try {
-            return await Location.find();
+            return await Location.find().populate('building');
         } catch (error) {
             throw error;
         }
@@ -11,7 +11,7 @@ const LocationService = {
 
     async getLocationById(locationId) {
         try {
-            return await Location.findById(locationId);
+            return await Location.findById(locationId).populate('building');
         } catch (error) {
             throw error;
         }
