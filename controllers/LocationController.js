@@ -23,6 +23,19 @@ const LocationController = {
         }
     },
 
+    async getLocationByBuildingId(req, res) {
+        try {
+            const { id } = req.params;
+            const location = await LocationService.getLocationByBuildingId(id);
+            if (!location) {
+                return res.status(404).send('Location not found');
+            }
+            res.json(location);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
+
     async createLocation(req, res) {
         try {
             const location = await LocationService.createLocation(req.body);

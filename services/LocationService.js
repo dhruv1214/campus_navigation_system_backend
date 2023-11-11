@@ -6,8 +6,63 @@ const LocationService = {
 		const session = driver.session();
 
 		try {
-			const result = await session.run("MATCH (l:Location) RETURN l");
-			return result.records.map((record) => beautifyJson(record));
+			const result = await session.run(
+				"MATCH (l:Location)-[:LOCATED_AT]->(b:Building) RETURN l, b"
+			);
+
+			return result.records.map((record) => {
+				const locationNode = record.get("l");
+				const buildingNode = record.get("b");
+
+				// Create a new object structure combining both Location and Building properties
+				return {
+					...beautifyJson({
+						keys: record.keys,
+						_fields: [locationNode],
+						_fieldLookup: { l: 0 }, // assuming 'l' is the key used in the RETURN clause of your Cypher query
+					}),
+					building: beautifyJson({
+						keys: record.keys,
+						_fields: [buildingNode],
+						_fieldLookup: { b: 1 }, // assuming 'b' is the key used in the RETURN clause of your Cypher query
+					}),
+				};
+			});
+		} catch (error) {
+			throw error;
+		} finally {
+			await session.close();
+		}
+	},
+
+	async getLocationByBuildingId(buildingId) {
+		const session = driver.session();
+
+		try {
+			const result = await session.run(
+				"MATCH (l:Location)-[:LOCATED_AT]->(b:Building) WHERE b.buildingId = $buildingId RETURN l, b",
+				{
+					buildingId: buildingId,
+				}
+			);
+
+			return result.records.map((record) => {
+				const locationNode = record.get("l");
+				const buildingNode = record.get("b");
+
+				return {
+					...beautifyJson({
+						keys: record.keys,
+						_fields: [locationNode],
+						_fieldLookup: { l: 0 },
+					}),
+					building: beautifyJson({
+						keys: record.keys,
+						_fields: [buildingNode],
+						_fieldLookup: { b: 1 },
+					}),
+				};
+			});
 		} catch (error) {
 			throw error;
 		} finally {
@@ -19,14 +74,30 @@ const LocationService = {
 		const session = driver.session();
 
 		try {
+			// return location and building data
 			const result = await session.run(
-				"MATCH (l:Location) WHERE id(l) = $locationId RETURN l",
+				"MATCH (l:Location)-[:LOCATED_AT]->(b:Building) WHERE l.locationId = $locationId RETURN l, b",
 				{
 					locationId: locationId,
 				}
 			);
 
-			return beautifyJson(result.records[0]);
+			const locationNode = result.records[0].get("l");
+			const buildingNode = result.records[0].get("b");
+
+			// Create a new object structure combining both Location and Building properties
+			return {
+				...beautifyJson({
+					keys: result.records[0].keys,
+					_fields: [locationNode],
+					_fieldLookup: { l: 0 },
+				}),
+				building: beautifyJson({
+					keys: result.records[0].keys,
+					_fields: [buildingNode],
+					_fieldLookup: { b: 1 },
+				}),
+			};
 		} catch (error) {
 			throw error;
 		} finally {
@@ -38,9 +109,8 @@ const LocationService = {
 		const session = driver.session();
 
 		try {
-
-			if(!locationData.buildingId){
-				throw new Error('BuildingId is required');
+			if (!locationData.buildingId) {
+				throw new Error("BuildingId is required");
 			}
 
 			const result = await session.run(
@@ -88,21 +158,21 @@ const LocationService = {
 	},
 
 	async updateLocation(locationId, locationData) {
-        const session = driver.session();
+		const session = driver.session();
 
-        try {
-            const result = await session.run(
-                "MATCH (l:Location) WHERE id(l) = $locationId SET l.name = $name, l.description = $description, l.floor = $floor, l.roomNumber = $roomNumber RETURN l",
-                {
-                    locationId: locationId,
-                    name: locationData.name,
-                    description: locationData.description,
-                    floor: locationData.floor,
-                    roomNumber: locationData.roomNumber,
-                }
-            );
+		try {
+			const result = await session.run(
+				"MATCH (l:Location) WHERE l.locationId = $locationId SET l.name = $name, l.description = $description, l.floor = $floor, l.roomNumber = $roomNumber RETURN l",
+				{
+					locationId: locationId,
+					name: locationData.name,
+					description: locationData.description,
+					floor: locationData.floor,
+					roomNumber: locationData.roomNumber,
+				}
+			);
 
-            const locationNode = result.records[0].get("l");
+			const locationNode = result.records[0].get("l");
 
 			await session.run(
 				"MATCH (l:Location {locationId: $locationId})-[r:LOCATED_AT]->() DELETE r",
@@ -119,52 +189,52 @@ const LocationService = {
 				}
 			);
 
-            if (
-                locationData.connectedLocations &&
-                locationData.connectedLocations.length > 0
-            ) {
-                await session.run(
-                    "MATCH (l:Location {locationId: $locationId})-[r:CONNECTED_TO]->() DELETE r",
-                    {
-                        locationId: locationId,
-                    }
-                );
+			if (
+				locationData.connectedLocations &&
+				locationData.connectedLocations.length > 0
+			) {
+				await session.run(
+					"MATCH (l:Location {locationId: $locationId})-[r:CONNECTED_TO]->() DELETE r",
+					{
+						locationId: locationId,
+					}
+				);
 
-                for (const connectedLocationId of locationData.connectedLocations) {
-                    await session.run(
-                        "MATCH (l:Location {locationId: $locationId}), (l2:Location {locationId: $connectedLocationId}) CREATE (l)-[:CONNECTED_TO]->(l2)",
-                        {
-                            locationId: locationId,
-                            connectedLocationId: connectedLocationId,
-                        }
-                    );
-                }
-            }
+				for (const connectedLocationId of locationData.connectedLocations) {
+					await session.run(
+						"MATCH (l:Location {locationId: $locationId}), (l2:Location {locationId: $connectedLocationId}) CREATE (l)-[:CONNECTED_TO]->(l2)",
+						{
+							locationId: locationId,
+							connectedLocationId: connectedLocationId,
+						}
+					);
+				}
+			}
 
-            return beautifyJson(locationNode);
-        } catch (error) {
-            throw error;
-        } finally {
-            await session.close();
-        }
+			return locationNode;
+		} catch (error) {
+			throw error;
+		} finally {
+			await session.close();
+		}
 	},
 
 	async deleteLocation(locationId) {
-        const session = driver.session();
+		const session = driver.session();
 
-        try {
-            const result = await session.run(
-                "MATCH (l:Location) WHERE id(l) = $locationId DETACH DELETE l",
-                {
-                    locationId: locationId,
-                }
-            );
-            return beautifyJson(result.records[0]);
-        } catch (error) {
-            throw error;
-        } finally {
-            await session.close();
-        }
+		try {
+			const result = await session.run(
+				"MATCH (l:Location) WHERE l.locationId = $locationId DETACH DELETE l",
+				{
+					locationId: locationId,
+				}
+			);
+			return beautifyJson(result.records[0]);
+		} catch (error) {
+			throw error;
+		} finally {
+			await session.close();
+		}
 	},
 };
 

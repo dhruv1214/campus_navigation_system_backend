@@ -82,6 +82,9 @@ const locationValidators = {
     getLocation: [
         param('id').notEmpty().withMessage('Location ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid location ID format')
     ],
+    getLocationByBuildingId: [
+        param('id').notEmpty().withMessage('Building ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid building ID format')
+    ],
     createLocation: [
         body('buildingId').notEmpty().withMessage('Building is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid building ID format'),
         body('name').notEmpty().withMessage('Location name is required'),
