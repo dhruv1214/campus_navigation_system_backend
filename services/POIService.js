@@ -1,44 +1,149 @@
 const PointOfInterest = require('../models/pointsOfIntrest');
+const driver = require('../db');
+
+const poiSchema = new mongoose.Schema({
+    poiId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PointOfInterest'
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        trim: true
+    },
+    location: {
+        coordinates: {
+            type: [Number],
+            index: '2dsphere'
+        }
+    },
+    category: String
+});
 
 const POIService = {
     async listPOIs() {
+        const session = driver.session();
+
         try {
-            return await PointOfInterest.find();
+            const result = await session.run("MATCH (poi:PointOfInterest) RETURN poi");
+            return result.records;
         } catch (error) {
             throw error;
+        } finally {
+            await session.close();
         }
     },
 
     async getPOIById(poiId) {
+        const session = driver.session();
+
         try {
-            return await PointOfInterest.findById(poiId);
+            const result = await session.run(
+                "MATCH (poi:PointOfInterest) WHERE id(poi) = $poiId RETURN poi",
+                {
+                    poiId: poiId,
+                }
+            );
+            return result.records;
         } catch (error) {
             throw error;
+        } finally {
+            await session.close();
         }
+
     },
 
     async createPOI(poiData) {
+        const session = driver.session();
+
         try {
-            const poi = new PointOfInterest(poiData);
-            return await poi.save();
+            const result = await session.run(
+                "CREATE (poi:PointOfInterest {poiId: randomUUID(), name: $name, description: $description, location: $location, category: $category}) RETURN poi",
+                {
+                    name: poiData.name,
+                    description: poiData.description,
+                    location: poiData.location,
+                    category: poiData.category
+                }
+            );
+
+            const poiNode = result.records[0].get("poi");
+
+            await session.run(
+                "MATCH (poi:PointOfInterest {poiId: $poiId}), (l:Location {locationId: $locationId}) CREATE (poi)-[:LOCATED_AT]->(l)",
+                {
+                    poiId: poiNode.properties.poiId,
+                    locationId: poiData.locationId,
+                }
+            );
+
+            return poiNode;
         } catch (error) {
             throw error;
+        } finally {
+            await session.close();
         }
     },
 
     async updatePOI(poiId, poiData) {
+        const session = driver.session();
+
         try {
-            return await PointOfInterest.findByIdAndUpdate(poiId, poiData, { new: true });
+            const result = await session.run(
+                "MATCH (poi:PointOfInterest) WHERE id(poi) = $poiId SET poi.name = $name, poi.description = $description, poi.location = $location, poi.category = $category RETURN poi",
+                {
+                    poiId: poiId,
+                    name: poiData.name,
+                    description: poiData.description,
+                    location: poiData.location,
+                    category: poiData.category
+                }
+            );
+
+            const poiNode = result.records[0].get("poi");
+
+            await session.run(
+                "MATCH (poi:PointOfInterest {poiId: $poiId})-[r:LOCATED_AT]->() DELETE r",
+                {
+                    poiId: poiNode.properties.poiId,
+                }
+            );
+
+            await session.run(
+                "MATCH (poi:PointOfInterest {poiId: $poiId}), (l:Location {locationId: $locationId}) CREATE (poi)-[:LOCATED_AT]->(l)",
+                {
+                    poiId: poiNode.properties.poiId,
+                    locationId: poiData.locationId,
+                }
+            );
+
+            return result.records;
         } catch (error) {
             throw error;
+        } finally {
+            await session.close();
         }
     },
 
     async deletePOI(poiId) {
+        const session = driver.session();
+
         try {
-            return await PointOfInterest.findByIdAndDelete(poiId);
+            const result = await session.run(
+                "MATCH (poi:PointOfInterest) WHERE id(poi) = $poiId DETACH DELETE poi",
+                {
+                    poiId: poiId
+                }
+            );
+            return result.records;
         } catch (error) {
             throw error;
+        } finally {
+            await session.close();
         }
     }
 };

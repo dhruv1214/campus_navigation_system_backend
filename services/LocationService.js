@@ -36,6 +36,11 @@ const LocationService = {
 		const session = driver.session();
 
 		try {
+
+			if(!locationData.buildingId){
+				throw new Error('BuildingId is required');
+			}
+
 			const result = await session.run(
 				"CREATE (l:Location {locationId: $locationId, buildingId: $buildingId, name: $name, description: $description, floor: $floor, roomNumber: $roomNumber}) RETURN l",
 				{
@@ -48,7 +53,15 @@ const LocationService = {
 				}
 			);
 
-			const locationNode = locationResult.records[0].get("l");
+			const locationNode = result.records[0].get("l");
+
+			await session.run(
+				"MATCH (l:Location {locationId: $locationId}), (b:Building {buildingId: $buildingId}) CREATE (l)-[:LOCATED_AT]->(b)",
+				{
+					locationId: locationNode.properties.locationId,
+					buildingId: locationData.buildingId,
+				}
+			);
 
 			if (
 				locationData.connectedLocations &&
@@ -89,6 +102,21 @@ const LocationService = {
             );
 
             const locationNode = result.records[0].get("l");
+
+			await session.run(
+				"MATCH (l:Location {locationId: $locationId})-[r:LOCATED_AT]->() DELETE r",
+				{
+					locationId: locationId,
+				}
+			);
+
+			await session.run(
+				"MATCH (l:Location {locationId: $locationId}), (b:Building {buildingId: $buildingId}) CREATE (l)-[:LOCATED_AT]->(b)",
+				{
+					locationId: locationId,
+					buildingId: locationData.buildingId,
+				}
+			);
 
             if (
                 locationData.connectedLocations &&

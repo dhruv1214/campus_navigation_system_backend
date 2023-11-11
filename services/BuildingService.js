@@ -41,7 +41,7 @@ const BuildingService = {
 
         try {
             const result = await session.run(
-                'CREATE (b:Building {name: $name, description: $description, imageURL: $imageURL}) RETURN b',
+                'CREATE (b:Building {buildingId: randomUUID(), name: $name, description: $description, imageURL: $imageURL}) RETURN b',
                 {
                     name: buildingData.name,
                     description: buildingData.description,
@@ -50,7 +50,6 @@ const BuildingService = {
               );
               return result.records;
         } catch (error) {
-            // handle error
             throw error;
         } finally {
             await session.close();
