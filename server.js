@@ -1,6 +1,7 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const mongoose = require('mongoose');
 
 const app = express()
 
@@ -14,6 +15,13 @@ const EventRoute = require('./routes/EventRoute');
 const LocationRoute = require('./routes/LocationRoute');
 const PathRoute = require('./routes/PathRoute');
 const POIRoute = require('./routes/POIRoute');
+const Mongoose = require("mongoose");
+
+
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Could not connect to MongoDB', err));
+
 
 app.use('/api/v1/announcements', AnnuncementRoute);
 app.use('/api/v1/buildings', BuildingRoute);
