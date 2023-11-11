@@ -1,3 +1,4 @@
+const { beautifyJson } = require("../core/utils");
 const driver = require("../db");
 
 const LocationService = {
@@ -6,7 +7,7 @@ const LocationService = {
 
 		try {
 			const result = await session.run("MATCH (l:Location) RETURN l");
-			return result.records;
+			return result.records.map((record) => beautifyJson(record));
 		} catch (error) {
 			throw error;
 		} finally {
@@ -24,7 +25,8 @@ const LocationService = {
 					locationId: locationId,
 				}
 			);
-			return result.records;
+
+			return beautifyJson(result.records[0]);
 		} catch (error) {
 			throw error;
 		} finally {
@@ -77,7 +79,7 @@ const LocationService = {
 				}
 			}
 
-			return locationNode;
+			return beautifyJson(locationNode);
 		} catch (error) {
 			throw error;
 		} finally {
@@ -139,7 +141,7 @@ const LocationService = {
                 }
             }
 
-            return locationNode;
+            return beautifyJson(locationNode);
         } catch (error) {
             throw error;
         } finally {
@@ -157,7 +159,7 @@ const LocationService = {
                     locationId: locationId,
                 }
             );
-            return result.records;
+            return beautifyJson(result.records[0]);
         } catch (error) {
             throw error;
         } finally {

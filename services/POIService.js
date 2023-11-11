@@ -1,28 +1,4 @@
-const PointOfInterest = require('../models/pointsOfIntrest');
 const driver = require('../db');
-
-const poiSchema = new mongoose.Schema({
-    poiId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'PointOfInterest'
-    },
-    name: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    description: {
-        type: String,
-        trim: true
-    },
-    location: {
-        coordinates: {
-            type: [Number],
-            index: '2dsphere'
-        }
-    },
-    category: String
-});
 
 const POIService = {
     async listPOIs() {
