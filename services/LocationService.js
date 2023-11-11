@@ -42,9 +42,8 @@ const LocationService = {
 			}
 
 			const result = await session.run(
-				"CREATE (l:Location {locationId: $locationId, buildingId: $buildingId, name: $name, description: $description, floor: $floor, roomNumber: $roomNumber}) RETURN l",
+				"CREATE (l:Location {locationId: randomUUID(), buildingId: $buildingId, name: $name, description: $description, floor: $floor, roomNumber: $roomNumber}) RETURN l",
 				{
-					locationId: locationData.locationId,
 					buildingId: locationData.buildingId,
 					name: locationData.name,
 					description: locationData.description,

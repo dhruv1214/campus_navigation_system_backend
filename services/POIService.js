@@ -62,11 +62,10 @@ const POIService = {
 
         try {
             const result = await session.run(
-                "CREATE (poi:PointOfInterest {poiId: randomUUID(), name: $name, description: $description, location: $location, category: $category}) RETURN poi",
+                "CREATE (poi:PointOfInterest {poiId: randomUUID(), name: $name, description: $description, category: $category}) RETURN poi",
                 {
                     name: poiData.name,
                     description: poiData.description,
-                    location: poiData.location,
                     category: poiData.category
                 }
             );
