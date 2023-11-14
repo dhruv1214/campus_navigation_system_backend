@@ -22,9 +22,22 @@ function beautifyJson(rowObj) {
 	return cleanJson;
 }
 
+function beautifyNode(node) {
+    if (!node || !node.properties) {
+        throw new TypeError('Invalid node object structure.');
+    }
 
+    // Create a JSON structure from the Neo4j Node
+    const cleanJson = {
+        ...node.properties,
+        id: node.identity.low, // Assuming the ID is always an Integer and not a high-value integer
+        labels: node.labels,
+    };
 
+    return cleanJson;
+}
 
 module.exports = {
 	beautifyJson,
+	beautifyNode
 };

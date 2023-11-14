@@ -10,4 +10,6 @@ router.post('', validate(locationValidators.createLocation), LocationController.
 router.put('/:id', validate(locationValidators.updateLocation), LocationController.updateLocation);
 router.delete('/:id', validate(locationValidators.deleteLocation), LocationController.deleteLocation);
 
+router.get('/distance/:start/:end', validate(locationValidators.getDistanceAndPathBetweenLocations), LocationController.getDistanceAndPathBetweenLocations);
+
 module.exports = router;

@@ -103,6 +103,10 @@ const locationValidators = {
     deleteLocation: [
         param('id').notEmpty().withMessage('Location ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid location ID format')
     ],
+    getDistanceAndPathBetweenLocations: [
+        param('start').notEmpty().withMessage('Start location ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid Start location ID format'),
+        param('end').notEmpty().withMessage('End location ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid End location ID format'),
+    ],
 };
 
 // (poi:PointOfInterest {poiId: randomUUID(), name: $name, description: $description, location: $location, category: $category})
