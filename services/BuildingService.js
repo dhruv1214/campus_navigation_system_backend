@@ -88,6 +88,14 @@ const BuildingService = {
 					buildingId: buildingId,
 				}
 			);
+
+			const result2 = await session.run(
+				"MATCH (b:Building) WHERE b.buildingId = $buildingId DETACH DELETE b",
+				{
+					buildingId: buildingId,
+				}
+			);
+
 			return result.records;
 		} catch (error) {
 			// handle error

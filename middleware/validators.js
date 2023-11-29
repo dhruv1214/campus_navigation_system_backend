@@ -19,13 +19,13 @@ const announcementValidators = {
         param('id').isMongoId().withMessage('Invalid announcement ID format')
     ],
     createAnnouncement: [
-        body('title').notEmpty().withMessage('Title is required'),
+        body('name').notEmpty().withMessage('Name is required'),
         body('description').optional().isString().withMessage('Description must be a string'),
         body('date').optional().isDate().withMessage('Date must be a date'),
     ],
     updateAnnouncement: [
         param('id').isMongoId().withMessage('Invalid announcement ID format'),
-        body('title').optional().notEmpty().withMessage('Title cannot be empty'),
+        body('name').optional().notEmpty().withMessage('Title cannot be empty'),
         body('description').optional().isString().withMessage('Description must be a string'),
         body('date').optional().isDate().withMessage('Date must be a date'),
     ],
@@ -62,14 +62,14 @@ const eventValidators = {
         param('id').notEmpty().withMessage('Event ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid event ID format')
     ],
     createEvent: [
-        body('title').notEmpty().withMessage('Title is required'),
+        body('name').notEmpty().withMessage('Name is required'),
         body('description').optional().isString().withMessage('Description must be a string'),
         body('date').optional().isDate().withMessage('Date must be a date'),
         body('locationId').notEmpty().withMessage('Location ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid location ID format'),
     ],
     updateEvent: [
         param('id').notEmpty().withMessage('Event ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid event ID format'),
-        body('title').optional().notEmpty().withMessage('Title cannot be empty'),
+        body('name').optional().notEmpty().withMessage('Name cannot be empty'),
         body('description').optional().isString().withMessage('Description must be a string'),
         body('date').optional().isDate().withMessage('Date must be a date'),
     ],

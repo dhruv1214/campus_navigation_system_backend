@@ -1,4 +1,5 @@
 const driver = require('../db');
+const {beautifyJson} = require("../core/utils");
 
 
 const EventService = {
@@ -7,7 +8,9 @@ const EventService = {
 
         try {
             const result = await session.run("MATCH (e:Event) RETURN e");
-            return result.records;
+
+
+            return result.records.map((record) => beautifyJson(record));
         } catch (error) {
             throw error;
         } finally {
@@ -21,12 +24,14 @@ const EventService = {
 
         try {
             const result = await session.run(
-                "MATCH (e:Event) WHERE id(e) = $eventId RETURN e",
+                "MATCH (e:Event) WHERE e.eventId = $eventId RETURN e",
                 {
                     eventId: eventId,
                 }
             );
-            return result.records;
+
+
+            return beautifyJson(result.records[0])
         } catch (error) {
             throw error;
         } finally {
