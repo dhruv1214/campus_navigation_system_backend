@@ -7,10 +7,29 @@ const EventService = {
         const session = driver.session();
 
         try {
-            const result = await session.run("MATCH (e:Event) RETURN e");
 
+            const result = await session.run(
+                "MATCH (e:Event)-[:LOCATED_AT]->(l:Location) RETURN e, l"
+            );
 
-            return result.records.map((record) => beautifyJson(record));
+            return result.records.map((record) => {
+                const eventNode = record.get("e");
+                const locationNode = record.get("l");
+
+                return {
+                    ...beautifyJson({
+                        keys: record.keys,
+                        _fields: [eventNode],
+                        _fieldLookup: { e: 0 },
+                    }),
+                    location: beautifyJson({
+                        keys: record.keys,
+                        _fields: [locationNode],
+                        _fieldLookup: { l: 1 },
+                    }),
+                };
+            });
+
         } catch (error) {
             throw error;
         } finally {
@@ -19,19 +38,37 @@ const EventService = {
 
     },
 
+    // 				"MATCH (l:Location)-[:LOCATED_AT]->(b:Building) WHERE l.locationId = $locationId OPTIONAL MATCH (l)-[:CONNECTED_TO]->(l2:Location) RETURN l, b, l2",
     async getEventById(eventId) {
         const session = driver.session();
 
         try {
             const result = await session.run(
-                "MATCH (e:Event) WHERE e.eventId = $eventId RETURN e",
+                // "MATCH (e:Event) WHERE e.eventId = $eventId
+                "MATCH (e:Event)-[:LOCATED_AT]->(l:Location) WHERE e.eventId = $eventId RETURN e, l",
                 {
                     eventId: eventId,
                 }
             );
 
 
-            return beautifyJson(result.records[0])
+
+            const eventNode = result.records[0].get("e");
+            const locationNode = result.records[0].get("l");
+
+            return {
+                ...beautifyJson({
+                    keys: result.records[0].keys,
+                    _fields: [eventNode],
+                    _fieldLookup: { e: 0 },
+                }),
+                location: beautifyJson({
+                    keys: result.records[0].keys,
+                    _fields: [locationNode],
+                    _fieldLookup: { l: 1 },
+                }),
+            };
+
         } catch (error) {
             throw error;
         } finally {
