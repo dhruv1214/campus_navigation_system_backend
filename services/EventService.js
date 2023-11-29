@@ -119,7 +119,7 @@ const EventService = {
 
         try {
             const result = await session.run(
-                "MATCH (e:Event) WHERE id(e) = $eventId SET e.name = $name, e.description = $description, e.startDateTime = $startDateTime, e.endDateTime = $endDateTime RETURN e",
+                "MATCH (e:Event) WHERE e.eventId = $eventId SET e.name = $name, e.description = $description, e.startDateTime = $startDateTime, e.endDateTime = $endDateTime RETURN e",
                 {
                     eventId: eventId,
                     name: eventData.name,
@@ -131,13 +131,15 @@ const EventService = {
 
             const eventNode = result.records[0].get("e");
 
-            // Delete existing relationship
+
             await session.run(
                 "MATCH (e:Event {eventId: $eventId})-[r:LOCATED_AT]->() DELETE r",
                 {
                     eventId: eventNode.properties.eventId
                 }
             );
+
+            console.log(eventNode);
 
             await session.run(
                 "MATCH (e:Event {eventId: $eventId}), (l:Location {locationId: $locationId}) CREATE (e)-[:LOCATED_AT]->(l)",

@@ -64,14 +64,11 @@ const eventValidators = {
     createEvent: [
         body('name').notEmpty().withMessage('Name is required'),
         body('description').optional().isString().withMessage('Description must be a string'),
-        body('date').optional().isDate().withMessage('Date must be a date'),
         body('locationId').notEmpty().withMessage('Location ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid location ID format'),
     ],
     updateEvent: [
-        param('id').notEmpty().withMessage('Event ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid event ID format'),
         body('name').optional().notEmpty().withMessage('Name cannot be empty'),
         body('description').optional().isString().withMessage('Description must be a string'),
-        body('date').optional().isDate().withMessage('Date must be a date'),
     ],
     deleteEvent: [
         param('id').notEmpty().withMessage('Event ID is required').matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).withMessage('Invalid event ID format')
